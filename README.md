@@ -40,7 +40,7 @@ If you have the others, you'll likely have this, too.
 ### ssh/scp
 You'll want to be able to copy challenge responses and certificates to your web servers.
 
-### Remote write access to http://<domain>/.well-known/acme-challenge/
+### Remote write access to http://&lt;domain&gt;/.well-known/acme-challenge/
 The Let's Encrypt ACME server will look here for a token signed by your private key.
 
 You must configure your web server to serve static files from that location and
