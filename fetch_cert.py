@@ -28,5 +28,5 @@ print(res_json)
 assert len(links) == 1, 'Missing link to CA cert'
 m = re.match('<([^>]+)>;rel="up"$', links[0])
 ca_cert = urlopen(m.group(1)).read()
-with open(os.path.join(account, 'acme_ca.crt.der'), 'wb') as caf:
+with open(os.path.join(account, 'expires', 'acme_ca.crt.der'), 'wb') as caf:
     caf.write(ca_cert)

@@ -14,7 +14,7 @@ from send_request import send_request
 def push_key_auth(account, domain, challenge):
     token = re.sub(r"[^A-Za-z0-9_\-]", "_", challenge['token'])
     key_auth = '.'.join((token, account_jwk.thumbprint))
-    with open(os.path.join(account, token), 'wb') as tf:
+    with open(os.path.join(account, 'tmp', token), 'wb') as tf:
         tf.write(key_auth)
     # Use make to push the token file
     # TODO make DOMAIN=example.com TOKEN=MD...ac push
@@ -28,7 +28,8 @@ def push_key_auth(account, domain, challenge):
     retcode = subprocess.call(
         'cd {account} && make {make_extra} DOMAIN={domain} FILE={file} '
         'push_challenge'.format(
-            account=account, make_extra=make_extra, domain=domain, file=token),
+            account=account, make_extra=make_extra, domain=domain,
+            file=os.path.join('tmp', token)),
         shell=True)
     assert retcode == 0, 'Failed to push challenge token to {}'.format(domain)
 

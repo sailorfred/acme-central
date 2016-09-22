@@ -26,12 +26,12 @@ COMMA := ,
 SPACE :=
 SPACE +=
 
-pem: $(ACCOUNT)/$(CERT).pem
+pem: $(ACCOUNT)/expires/$(CERT).pem
 
-bundle: $(ACCOUNT)/$(CERT).bundle.crt
+bundle: $(ACCOUNT)/expires/$(CERT).bundle.crt
 
 $(ACCOUNT)/account.key:
-	-mkdir -p $(ACCOUNT)
+	@mkdir -p $(ACCOUNT)
 	openssl genrsa 4096 > $@
 
 $(ACCOUNT)/%.key:
@@ -66,30 +66,40 @@ $(ACCOUNT)/$(CERT).csr: $(ACCOUNT)/registered $(ACCOUNT)/account.key $(ACCOUNT)/
 $(ACCOUNT)/$(CERT).csr.der: $(ACCOUNT)/$(CERT).csr
 	openssl req -in $< -outform DER > $@
 
-$(ACCOUNT)/$(CERT).pem: $(ACCOUNT)/$(CERT).key $(ACCOUNT)/$(CERT).bundle.crt
+$(ACCOUNT)/expires/$(CERT).pem: $(ACCOUNT)/$(CERT).key $(ACCOUNT)/expires/$(CERT).bundle.crt
 	cat $^ > $@
 
-$(ACCOUNT)/$(CERT).bundle.crt: $(ACCOUNT)/$(CERT).crt
-	cat $< $(ACCOUNT)/acme_ca.crt > $@
+$(ACCOUNT)/expires/$(CERT).bundle.crt: $(ACCOUNT)/expires/$(CERT).crt
+	cat $< $(ACCOUNT)/expires/acme_ca.crt > $@
 
-$(ACCOUNT)/$(CERT).crt: $(ACCOUNT)/$(CERT).crt.der
+$(ACCOUNT)/expires/$(CERT).crt: $(ACCOUNT)/expires/$(CERT).crt.der
 	openssl x509 -inform DER -in $< -out $@
 
-$(ACCOUNT)/$(CERT).crt.der: $(ACCOUNT)/$(CERT).csr.der $(foreach domain,$(subst $(COMMA),$(SPACE),$(SAN_DOMAINS)),$(ACCOUNT)/$(domain).challenged)
+$(ACCOUNT)/expires/$(CERT).crt.der: $(ACCOUNT)/$(CERT).csr.der $(foreach domain,$(subst $(COMMA),$(SPACE),$(SAN_DOMAINS)),$(ACCOUNT)/expires/$(domain).challenged)
 	LE_SERVER=$(LE_SERVER) python ./fetch_cert.py $(ACCOUNT) $< > $@
-	openssl x509 -inform DER -in $(ACCOUNT)/acme_ca.crt.der -out $(ACCOUNT)/acme_ca.crt
+	openssl x509 -inform DER -in $(ACCOUNT)/expires/acme_ca.crt.der -out $(ACCOUNT)/expires/acme_ca.crt
 
-$(ACCOUNT)/%.challenge: $(ACCOUNT)/$(CERT).csr
+$(ACCOUNT)/expires/%.challenge: $(ACCOUNT)/expires $(ACCOUNT)/$(CERT).csr
 	LE_SERVER=$(LE_SERVER) python ./send_request.py $(ACCOUNT) new-authz '{"resource":"new-authz", "identifier": {"type": "dns", "value": "$*"}}' > $@
 
-$(ACCOUNT)/%.challenged: $(ACCOUNT)/%.challenge
+$(ACCOUNT)/expires/%.challenged: $(ACCOUNT)/expires/%.challenge $(ACCOUNT)/tmp
 	LE_SERVER=$(LE_SERVER) python ./do_challenge.py $(ACCOUNT) $* $< $@
+
+$(ACCOUNT)/tmp:
+	mkdir -p $@
+
+$(ACCOUNT)/expires:
+	mkdir -p $@
 
 push_challenge:
 	scp ./$(FILE) $(DOMAIN):$(WELL_KNOWN_DIR)
 
-push_pem: $(ACCOUNT)/$(CERT).pem
+push_pem: $(ACCOUNT)/expires/$(CERT).pem
 	scp $< $(CERT):$(CERT_DIR)
 
-push_bundle: $(ACCOUNT)/$(CERT).bundle.crt
+push_bundle: $(ACCOUNT)/expires/$(CERT).bundle.crt
 	scp $< $(CERT):$(CERT_DIR)
+
+clean:
+	-rm */tmp/*
+	-rm */expires/*
