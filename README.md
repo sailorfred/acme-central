@@ -65,7 +65,22 @@ Here is an example that registers an account and generates the .pem file:
 make ACCOUNT=sailorfred CERT=example.com SAN_DOMAINS=example.com,www.example.com WELL_KNOWN_DIR=/var/www/example/.well-known/acme-challenge/ pem
 ```
 
-After running this, you should have your necessary files in your $(ACCOUNT) subdir.
+After running this with the appropriate substitutions, you should have your necessary files in your $(ACCOUNT)/expires subdir.
+
+### Renewal
+Clear up the files that need to be regenerated for renewal:
+
+```
+make clean
+```
+
+Then redo the registration process:
+
+```
+make ACCOUNT=sailorfred CERT=example.com SAN_DOMAINS=example.com,www.example.com WELL_KNOWN_DIR=/var/www/example/.well-known/acme-challenge/ pem
+```
+
+Your Let's Encrypt registration, private keys, CSR, etc. won't be regenerated.
 
 ##Sandbox Testing
 
