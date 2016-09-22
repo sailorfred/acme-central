@@ -23,6 +23,12 @@ Here are some issues that this project aims to improve on:
 
 ##Requirements
 
+### Bash
+* Linux defaults to bash
+* FreeBSD has a port
+* Mac OSX has bash since Panther
+* Windows 10 [Bash on Ubuntu](https://msdn.microsoft.com/en-us/commandline/wsl/about) should have it
+
 ### GNU Make
 * Linux will have this already installed
 * FreeBSD has a port
