@@ -1,25 +1,45 @@
 # acme-central
 ACME client that keeps your Let's Encrypt account keys off your server
+and supports centralized certificate management.
+Your cert management happens on one machine (desktop or laptop, not your web servers)
+allowing you to push certs to production machines via scp, chef, puppet, ansible, etc.
 
-The [Let's Encrypt](https://letsencrypt.org/) organization is aiming make it
+The [Let's Encrypt](https://letsencrypt.org/) organization is making it
 easy to use HTTPS with free X.509 certificates when you meet certain
-standardized requirements.
+standardized requirements via their certbot client.
 
 Unfortunately, some of those requirements for certbot make it difficult to
 follow secure practices.
 
 The [Let's Encrypt NoSudo](https://github.com/diafygi/letsencrypt-nosudo)
-project is a step in the right direction, but still requires manual steps
+and [acme-tiny](https://github.com/diafygi/acme-tiny) projects are a step in
+the right direction, but still require manual steps
 and a short outage of your website.
 
-Here are some issues that this project aims to improve on:
+## Motivation
 
+Here are some issues with the existing projects that
+this project aims to improve on:
+
+* Most natural for a single webserver
 * Let's Encrypt account private key is present on the web server
-* Certbot modifies your webserver configuration
-* Certbot installs software on your machine
-* A web server is briefly run on your domain, bringing down your site
-* Root access is required
-* Does not easily support multiple accounts
+* Certbot in auto mode modifies your webserver configuration
+* Certbot in auto mode installs software on your machine
+* Do not easily support multiple Let's Encrypt accounts
+
+Here are the acme-central features that help:
+
+* Easily customizable methods for pushing challenges and certificates to web servers to fit your environment.
+* Multiple web servers easily supported.
+* Small code base (~300 SLOC) for easy auditing.
+* Small dependency set - Most Linux boxes already have bash, openssl, python, make, awk, and ssh. Mac only needs make installed.
+
+## Expected use case for acme-central user
+
+Separation of certificate management from web servers - one management
+machine that holds the Let's Encrypt account private key and performs
+the certificate management vs. the web servers that get the challenge
+files and certificates pushed to them.
 
 ##Requirements
 
