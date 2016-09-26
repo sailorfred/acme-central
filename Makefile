@@ -9,6 +9,9 @@ WELL_KNOWN_DIR=/var/www/html/.well-known/acme-challenge/
 
 CERT_DIR=/etc/nginx/ssl/
 
+# How long do certs normally last before being cleaned and reissued
+CERT_AGE=60
+
 help:
 	@echo Run:
 	@echo
@@ -20,7 +23,8 @@ help:
 	@echo
 	@echo Set WELL_KNOWN_DIR if other than /var/www/html/.well-known/acme-challenge/
 
-.SECONDARY: $(ACCOUNT)/account.key $(ACCOUNT)/$(CERT).key # Don't remove my .key file when making the .csr
+# Don't remove intermediate files
+.SECONDARY:
 
 COMMA := ,
 SPACE :=
@@ -30,11 +34,10 @@ pem: $(ACCOUNT)/expires/$(CERT).pem
 
 bundle: $(ACCOUNT)/expires/$(CERT).bundle.crt
 
-$(ACCOUNT)/account.key:
-	@mkdir -p $(ACCOUNT)
-	openssl genrsa 4096 > $@
+$(ACCOUNT):
+	mkdir -p $@
 
-$(ACCOUNT)/%.key:
+$(ACCOUNT)/%.key: | $(ACCOUNT)
 	openssl genrsa 4096 > $@
 
 $(ACCOUNT)/registered: $(ACCOUNT)/account_jwk.py
@@ -79,10 +82,10 @@ $(ACCOUNT)/expires/$(CERT).crt.der: $(ACCOUNT)/$(CERT).csr.der $(foreach domain,
 	LE_SERVER=$(LE_SERVER) python ./fetch_cert.py $(ACCOUNT) $< > $@
 	openssl x509 -inform DER -in $(ACCOUNT)/expires/acme_ca.crt.der -out $(ACCOUNT)/expires/acme_ca.crt
 
-$(ACCOUNT)/expires/%.challenge: $(ACCOUNT)/expires $(ACCOUNT)/$(CERT).csr
+$(ACCOUNT)/expires/%.challenge: $(ACCOUNT)/$(CERT).csr | $(ACCOUNT)/expires
 	LE_SERVER=$(LE_SERVER) python ./send_request.py $(ACCOUNT) new-authz '{"resource":"new-authz", "identifier": {"type": "dns", "value": "$*"}}' > $@
 
-$(ACCOUNT)/expires/%.challenged: $(ACCOUNT)/expires/%.challenge $(ACCOUNT)/tmp
+$(ACCOUNT)/expires/%.challenged: $(ACCOUNT)/expires/%.challenge | $(ACCOUNT)/tmp
 	LE_SERVER=$(LE_SERVER) python ./do_challenge.py $(ACCOUNT) $* $< $@
 
 $(ACCOUNT)/tmp:
@@ -103,3 +106,6 @@ push_bundle: $(ACCOUNT)/expires/$(CERT).bundle.crt
 clean:
 	-rm */tmp/*
 	-rm */expires/*
+
+clean_old:
+	find */expires -type f -mtime +$(CERT_AGE) -print -delete

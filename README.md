@@ -63,6 +63,9 @@ files and certificates pushed to them.
 ### awk
 If you have the others, you'll likely have this, too.
 
+### find
+If you have the others, you'll likely have this, too.
+
 ### ssh/scp
 You'll want to be able to copy challenge responses and certificates to your web servers.
 
@@ -97,8 +100,10 @@ After running this with the appropriate substitutions, you should have your nece
 Clear up the files that need to be regenerated for renewal:
 
 ```
-make clean
+make clean_old
 ```
+
+This defaults to cleaning up 60 day old certificates.
 
 Then redo the registration process:
 
@@ -107,6 +112,12 @@ make ACCOUNT=sailorfred CERT=example.com SAN_DOMAINS=example.com,www.example.com
 ```
 
 Your Let's Encrypt registration, private keys, CSR, etc. won't be regenerated.
+
+These can be combined in one make run:
+
+```
+make clean_old ACCOUNT=sailorfred CERT=example.com SAN_DOMAINS=example.com,www.example.com WELL_KNOWN_DIR=/var/www/example/.well-known/acme-challenge/ pem
+```
 
 ##Sandbox Testing
 
