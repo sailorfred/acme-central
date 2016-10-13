@@ -102,7 +102,7 @@ This command does the initial registration only (usually, you would let the pem 
 make ACCOUNT=sailorfred EMAIL=admin@example.com sailorfred/registered
 ```
 
-Doing this means you can skip the email address for the domain registration.
+Doing this first means you can skip the email address for the certificate generation.
 
 ### Renewal
 Clear up the files that need to be regenerated for renewal:
