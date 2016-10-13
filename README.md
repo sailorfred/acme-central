@@ -91,10 +91,18 @@ will give you the current help text.
 Here is an example that registers an account and generates the .pem file:
 
 ```
-make ACCOUNT=sailorfred CERT=example.com SAN_DOMAINS=example.com,www.example.com WELL_KNOWN_DIR=/var/www/example/.well-known/acme-challenge/ pem
+make ACCOUNT=sailorfred EMAIL=admin@example.com CERT=example.com SAN_DOMAINS=example.com,www.example.com WELL_KNOWN_DIR=/var/www/example/.well-known/acme-challenge/ pem
 ```
 
 After running this with the appropriate substitutions, you should have your necessary files in your $(ACCOUNT)/expires subdir.
+
+This command does the initial registration only (usually, you would let the pem generation do the registration):
+
+```
+make ACCOUNT=sailorfred EMAIL=admin@example.com sailorfred/registered
+```
+
+Doing this means you can skip the email address for the domain registration.
 
 ### Renewal
 Clear up the files that need to be regenerated for renewal:

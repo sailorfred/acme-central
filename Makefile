@@ -41,7 +41,7 @@ $(ACCOUNT)/%.key: | $(ACCOUNT)
 	openssl genrsa 4096 > $@
 
 $(ACCOUNT)/registered: $(ACCOUNT)/account_jwk.py
-	LE_SERVER=$(LE_SERVER) python ./send_request.py $(ACCOUNT) new-reg '{"resource":"new-reg", "agreement": "'$$(curl -sI https://acme-staging.api.letsencrypt.org/terms | grep Location: | awk -F '[ \\r\\n]+' 'BEGIN {ORS=""} {print $$2}')'"}' > $@
+	LE_SERVER=$(LE_SERVER) python ./send_request.py $(ACCOUNT) new-reg '{"resource":"new-reg", "agreement": "'$$(curl -sI https://acme-staging.api.letsencrypt.org/terms | grep Location: | awk -F '[ \\r\\n]+' 'BEGIN {ORS=""} {print $$2}')'", "contact": ["mailto:'${EMAIL}'"]}' > $@
 	@echo 'import json; response = json.loads("""'`cat $@`'"""); print("\\n\\nRead and agree with agreement at " + response["agreement"] + "\\n\\n")' | python
 
 # When Boulder supports contact info
